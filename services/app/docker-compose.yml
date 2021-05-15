@@ -1,0 +1,66 @@
+version: '3.7'
+
+services:
+  react_native:
+    build:
+      context: .
+      args:
+        - NODE_ENV=development
+    restart: always
+    container_name: react_native_app
+    environment:
+      - NODE_ENV=development
+    tty: true
+    ports:
+      - '19006:19006'
+      - '19001:19001'
+      - '19002:19002'
+    volumes:  
+      - ../app:/app
+    healthcheck:
+      disable: true
+    
+  mongo:
+    image: mongo:latest
+    restart: always
+    container_name: mongo
+    environment: 
+      MONGO_INITDB_DATABASE: db
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: bertagerard 
+    ports:
+      - '27017:27017'
+    volumes:
+      - '../../data/mongo:/data/db'
+  
+  mongo-express:
+    image: mongo-express:latest
+    restart: always
+    container_name: mongo-express
+    depends_on: 
+      - mongo 
+    ports:
+      - 8081:8081
+    environment: 
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: bertagerard
+      ME_CONFIG_BASICAUTH_USERNAME: bertagerard
+      ME_CONFIG_BASICAUTH_PASSWORD: bertagerard
+      
+  webserver:
+    image: nginx
+    depends_on: 
+      - react_native
+      - mongo-express
+    container_name: nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+
+
+    
+
+  
